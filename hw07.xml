@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<!-- To run this build script, type: ant -f hw.xml on a shell. -->
+<project name="student" basedir="." default="clean">
+	<property environment="env" />
+	<echo message="JUNIT: ${env.JUNIT}" />
+	<echo message="ANT_HOME: ${env.ANT_HOME}" />
+	<property name="src" location="src" />
+	<property name="bin" location="bin" />
+	<property name="test.src" location="test/src" />
+	<property name="test.bin" location="test/bin" />
+	<property name="test.report" location="test/report" />
+
+	<path id="classpath">
+		<pathelement location="bin" />
+		<pathelement location="test/bin" />
+		<fileset dir="${env.JUNIT}" includes="org.junit.*.jar"
+			excludes="org.junit.vintage.*.jar" />
+		<fileset dir="${env.JUNIT}" includes="org.opentest4j*.jar" />
+		<fileset dir="${env.JUNIT}" includes="org.apiguardian*.jar" />
+	</path>
+	<echo message="${toString:classpath}" />
+
+	<target name="init">
+		<mkdir dir="${bin}" />
+		<mkdir dir="${test.bin}" />
+		<mkdir dir="${test.src}" />
+		<mkdir dir="${test.report}" />
+		<copy todir="${test.src}">
+			<fileset dir="${src}">
+				<include name="edu/umb/cs680/hw07/*Test.java" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="compile" depends="init">
+		<javac srcdir="${src}" destdir="${bin}" includeAntRuntime="no">
+			<classpath refid="classpath" />
+			<include name="edu/umb/cs680/hw07/mainClass.java" />
+		</javac>
+		<javac srcdir="${src}" destdir="${test.bin}"
+			includeAntRuntime="no">
+			<classpath refid="classpath" />
+			<include name="edu/umb/cs680/hw07/FileSystemTest.java" />
+		</javac>
+	</target>
+
+	<target name="run" depends="compile">
+		<java classname="edu.umb.cs680.hw07.mainClass" classpathref="classpath"
+			fork="true" />
+	</target>
+
+	<target name="test" depends="run">
+		<junitlauncher printSummary="true">
+			<classpath refid="classpath" />
+			<testclasses outputdir="test/report">
+				<fileset dir="${test.bin}">
+					<include name="edu/umb/cs680/hw07/*Test.class" />
+				</fileset>
+				<listener type="legacy-plain" sendSysOut="true" />
+				<listener type="legacy-xml" sendSysOut="true"
+					sendSysErr="true"></listener>
+			</testclasses>
+		</junitlauncher>
+
+	</target>
+	<target name="clean" depends="test">
+		<delete includeemptydirs="true">
+			<fileset dir="${bin}/edu/umb/cs680/hw07" includes="**/*" />
+			<fileset dir="${test.bin}" includes="**/*" />
+		</delete>
+	</target>
+
+</project>
